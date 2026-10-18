@@ -1,0 +1,45 @@
+# Publica só a demo visual (HTML/CSS/JS) no GitHub Pages
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Montar pasta pública
+        run: |
+          mkdir -p _site/assets
+          cp index.html site.html salas.html sala.html login.html \
+             painel.html painel-reservas.html painel-agenda.html painel-salas.html \
+             _site/
+          cp assets/style.css assets/app.js _site/assets/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
